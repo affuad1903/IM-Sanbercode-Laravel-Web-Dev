@@ -1,17 +1,34 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\FormController;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BookController;
 use App\Http\Controllers\GenreController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\CommentsController;
 
 Route::get('/', [DashboardController::class,'home']);
-Route::get('/register', [FormController::class,'register']);
-Route::post('/welcome', [FormController::class,'kirim']);
-Route::get('/genre', [GenreController::class,'index']);
-Route::get('/genre/create', [GenreController::class,'create']);
-Route::post('/genre', [GenreController::class,'store']);
-Route::get('/genre/{genre_id}', [GenreController::class,'show']);
-Route::get('/genre/{genre_id}/edit', [GenreController::class,'edit']);
-Route::put('/genre/{genre_id}', [GenreController::class,'update']);
-Route::delete('/genre/{genre_id}', [GenreController::class,'destroy']);
+
+Route::middleware(['auth'])->group(function () {
+    //logout
+    Route::post('/logout', [AuthController::class,'logout']);
+    Route::get('/profile', [AuthController::class,'getprofile']);
+    Route::post('/profile', [AuthController::class,'createprofile']);
+    Route::put('/profile/{id}', [AuthController::class,'updateprofile']);
+    Route::post('/comments/{book_id}', [CommentsController::class,'comments']);
+});
+
+// Genre
+Route::resource('genre',GenreController::class);
+// Book
+Route::resource('book',BookController::class);
+
+// Auth
+// Register
+Route::get('/register', [AuthController::class,'showregister']);
+Route::post('/register', [AuthController::class,'registeruser']);
+
+// Login
+Route::get('/login', [AuthController::class,'showlogin'])->name('login');
+Route::post('/login', [AuthController::class,'login']);
+

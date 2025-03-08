@@ -2,66 +2,105 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
+use App\Http\Middleware\isAdmin;
+use App\Models\genres;
 
-class GenreController extends Controller
+class GenreController extends Controller implements HasMiddleware
 {
+        // Middleware 
+        public static function middleware(): array
+        {
+            return [
+                new Middleware(isAdmin::class, except: ['index','show']),
+            ];
+        }
+    /**
+     * Display a listing of the resource.
+     */
     public function index()
     {
-        $genre = DB::table('genres')->get();
-        return view('genre.index', compact('genre'));
+        $genre = genres::all();
+        return view('genre.index', ["genre"=>$genre]);
     }
+
+    /**
+     * Show the form for creating a new resource.
+     */
     public function create()
     {
         return view('genre.create');
     }
 
+    /**
+     * Store a newly created resource in storage.
+     */
     public function store(Request $request)
     {
+        // Validasi
         $request->validate([
             'name' => 'required|unique:genres',
             'description' => 'required',
         ]);
-        $query = DB::table('genres')->insert([
+                
+        //Insert Data
+        DB::table('genres')->insert([
             "name" => $request["name"],
             "description" => $request["description"],
-            "created_at" => now(),
-            "updated_at" => now()
-        ]);
+            "created_at" => Carbon::now(),
+            "updated_at" => Carbon::now()
+            ]);
         return redirect('/genre');
     }
-    public function show($id)
+
+    /**
+     * Display the specified resource.
+     */
+    public function show(string $id)
     {
-        $genre = DB::table('genres')->where('id', $id)->first();
-        return view('genre.show', compact('genre'));
+        //Show Data
+        $genre = genres::find($id);
+        return view('genre.show', ["genre"=>$genre]);
     }
-    public function edit($id)
+
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit(string $id)
     {
         $genre = DB::table('genres')->where('id', $id)->first();
         return view('genre.edit', compact('genre'));
     }
 
-    public function update($id, Request $request)
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, string $id)
     {
         $request->validate([
             'name' => 'required|unique:genres',
             'description' => 'required',
         ]);
-
-        $query = DB::table('genres')
+        DB::table('genres')
             ->where('id', $id)
             ->update([
                 'name' => $request["name"],
                 'description' => $request["description"],
-                "updated_at" => now()
-            ]);
+                "updated_at" => Carbon::now()
+        ]);
         return redirect('/genre');
     }
-    
-    public function destroy($id)
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(string $id)
     {
-        $query = DB::table('genres')->where('id', $id)->delete();
+        DB::table('genres')->where('id', $id)->delete();
         return redirect('/genre');
     }
 }

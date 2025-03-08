@@ -3,7 +3,13 @@
     GENRE
 @endsection
 @section('content')
+
+@auth
+@if (Auth()->user()->role === 'admin')
 <a href="{{url('/genre/create')}}" class="btn btn-primary">Tambah</a>
+@endif
+@endauth
+
 <table class="table">
     <thead class="thead-light">
       <tr>
@@ -20,13 +26,17 @@
                 <td>{{$value->name}}</td>
                 <td>{{$value->description}}</td>
                 <td class="d-flex justify-content-center align-items-center">
-                    <a href="/genre/{{$value->id}}" class="btn btn-info">Show</a>
+                    <a href="/genre/{{$value->id}}" class="btn btn-info">Detail</a>
+                    @auth
+                    @if (Auth()->user()->role === 'admin')
                     <a href="/genre/{{$value->id}}/edit" class="btn btn-primary">Edit</a>
                     <form action="/genre/{{$value->id}}" method="POST" onsubmit="return confirm('are you sure delete data?')" >
                         @csrf
                         @method('DELETE')
                         <input type="submit" class="btn btn-danger my-1" value="Delete">
                     </form>
+                    @endif
+                    @endauth
                 </td>
             </tr>
         @empty
